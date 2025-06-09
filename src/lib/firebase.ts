@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
+import { z } from "zod";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD18MG0PsY249jEcuokamcBYCak1jJApwM",
@@ -34,7 +35,17 @@ export const signOut = async () => {
   await auth.signOut();
 };
 
-type Submission = {
+export const SubmissionSchema = z.object({
+  id: z.string(),
+  tags: z.string(),
+  fileUrls: z.array(z.string()),
+  uid: z.string(),
+  createdAt: z.coerce.date(),
+});
+
+export type Submission = z.infer<typeof SubmissionSchema>;
+
+type NewSubmission = {
   tags: string;
   files: FileList;
 };
@@ -49,8 +60,10 @@ type SubmissionSubmitResult =
       error: unknown;
     };
 
+export const submissionsCollection = collection(db, "submissions");
+
 export const createSubmission = async (
-  submission: Submission,
+  submission: NewSubmission,
   uid: string,
 ): Promise<SubmissionSubmitResult> => {
   try {
@@ -59,7 +72,7 @@ export const createSubmission = async (
     );
     const uploadedFileUrls = await Promise.all(filePromises);
 
-    const docRef = await addDoc(collection(db, "submissions"), {
+    const docRef = await addDoc(submissionsCollection, {
       tags: submission.tags,
       fileUrls: uploadedFileUrls,
       createdAt: new Date().toISOString(),
