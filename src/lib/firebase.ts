@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { addDoc, collection, getFirestore } from "firebase/firestore";
+
 const firebaseConfig = {
   apiKey: "AIzaSyD18MG0PsY249jEcuokamcBYCak1jJApwM",
   authDomain: "nocontextthrows-ff63b.firebaseapp.com",
@@ -12,6 +14,7 @@ const firebaseConfig = {
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 export const signInWithGoogle = async (): Promise<boolean> => {
   const provider = new GoogleAuthProvider();
@@ -27,4 +30,15 @@ export const signInWithGoogle = async (): Promise<boolean> => {
 
 export const signOut = async () => {
   await auth.signOut();
+};
+
+type Submission = {
+  tags: string;
+  files: FileList;
+};
+
+export const createSubmission = async (submission: Submission) => {
+  const docRef = await addDoc(collection(db, "submissions"), {
+    tags: submission.tags,
+  });
 };

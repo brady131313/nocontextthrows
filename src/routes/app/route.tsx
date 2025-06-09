@@ -17,9 +17,11 @@ export const Route = createFileRoute("/app")({
 
 function RouteComponent() {
   return (
-    <main className="w-full">
+    <main>
       <Navbar />
-      <Outlet />
+      <div className="bg-muted flex min-h-svh flex-col items-center gap-6 p-6 md:p-10">
+        <Outlet />
+      </div>
     </main>
   );
 }
