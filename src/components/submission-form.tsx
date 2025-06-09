@@ -15,6 +15,7 @@ import { Button } from "./ui/button";
 import { createSubmission } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-provider";
 
 const submissionSchema = z.object({
   tags: z.string(),
@@ -35,6 +36,7 @@ const submissionSchema = z.object({
 type SubmissionSchema = z.infer<typeof submissionSchema>;
 
 export function SubmissionForm() {
+  const { user } = useAuth();
   const [fileInputKey, setFileInputKey] = useState("file-input");
 
   const form = useForm<SubmissionSchema>({
@@ -53,12 +55,13 @@ export function SubmissionForm() {
   };
 
   const onSubmit = async (data: SubmissionSchema) => {
-    try {
-      await createSubmission(data);
+    const result = await createSubmission(data, user!.uid);
+
+    if (result.success) {
       resetForm();
       toast.success("Submission created successfully!");
-    } catch (error) {
-      console.error(error);
+    } else {
+      toast.error("Submission failed");
     }
   };
 

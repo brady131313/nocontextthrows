@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export const signInWithGoogle = async (): Promise<boolean> => {
   const provider = new GoogleAuthProvider();
@@ -37,8 +39,54 @@ type Submission = {
   files: FileList;
 };
 
-export const createSubmission = async (submission: Submission) => {
-  const docRef = await addDoc(collection(db, "submissions"), {
-    tags: submission.tags,
+type SubmissionSubmitResult =
+  | {
+      success: true;
+      id: string;
+    }
+  | {
+      success: false;
+      error: unknown;
+    };
+
+export const createSubmission = async (
+  submission: Submission,
+  uid: string,
+): Promise<SubmissionSubmitResult> => {
+  try {
+    const filePromises = Array.from(submission.files).map((file) =>
+      uploadFileAndGetUrl(file, uid),
+    );
+    const uploadedFileUrls = await Promise.all(filePromises);
+
+    const docRef = await addDoc(collection(db, "submissions"), {
+      tags: submission.tags,
+      fileUrls: uploadedFileUrls,
+      createdAt: new Date().toISOString(),
+      uid,
+    });
+
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error("Error creating submission: ", error);
+    return { success: false, error };
+  }
+};
+
+const uploadFileAndGetUrl = async (
+  file: File,
+  uid: string,
+): Promise<string> => {
+  const timestamp = Date.now();
+  const fileName = `${uid}-${timestamp}-${file.name}`;
+
+  const storageRef = ref(storage, `submissions/${fileName}`);
+  const snapshot = await uploadBytes(storageRef, file, {
+    customMetadata: {
+      userId: uid,
+    },
   });
+
+  const downloadUrl = await getDownloadURL(snapshot.ref);
+  return downloadUrl;
 };
