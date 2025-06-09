@@ -11,14 +11,24 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as NewSubmissionImport } from './routes/new-submission'
+import { Route as AuthRouteImport } from './routes/auth/route'
+import { Route as AppRouteImport } from './routes/app/route'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as AppNewImport } from './routes/app/new'
+import { Route as AppSubmissionsIndexImport } from './routes/app/submissions/index'
 
 // Create/Update Routes
 
-const NewSubmissionRoute = NewSubmissionImport.update({
-  id: '/new-submission',
-  path: '/new-submission',
+const AuthRouteRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AppRouteRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -26,6 +36,24 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AuthLoginRoute = AuthLoginImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+
+const AppNewRoute = AppNewImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AppSubmissionsIndexRoute = AppSubmissionsIndexImport.update({
+  id: '/submissions/',
+  path: '/submissions/',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -39,51 +67,132 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/new-submission': {
-      id: '/new-submission'
-      path: '/new-submission'
-      fullPath: '/new-submission'
-      preLoaderRoute: typeof NewSubmissionImport
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRoute
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRoute
+    }
+    '/app/new': {
+      id: '/app/new'
+      path: '/new'
+      fullPath: '/app/new'
+      preLoaderRoute: typeof AppNewImport
+      parentRoute: typeof AppRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginImport
+      parentRoute: typeof AuthRouteImport
+    }
+    '/app/submissions/': {
+      id: '/app/submissions/'
+      path: '/submissions'
+      fullPath: '/app/submissions'
+      preLoaderRoute: typeof AppSubmissionsIndexImport
+      parentRoute: typeof AppRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface AppRouteRouteChildren {
+  AppNewRoute: typeof AppNewRoute
+  AppSubmissionsIndexRoute: typeof AppSubmissionsIndexRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppNewRoute: AppNewRoute,
+  AppSubmissionsIndexRoute: AppSubmissionsIndexRoute,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
+interface AuthRouteRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+}
+
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+}
+
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/new-submission': typeof NewSubmissionRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/auth': typeof AuthRouteRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/app/submissions': typeof AppSubmissionsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/new-submission': typeof NewSubmissionRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/auth': typeof AuthRouteRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/app/submissions': typeof AppSubmissionsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/new-submission': typeof NewSubmissionRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/auth': typeof AuthRouteRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/app/submissions/': typeof AppSubmissionsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/new-submission'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/app/new'
+    | '/auth/login'
+    | '/app/submissions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/new-submission'
-  id: '__root__' | '/' | '/new-submission'
+  to: '/' | '/app' | '/auth' | '/app/new' | '/auth/login' | '/app/submissions'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/app/new'
+    | '/auth/login'
+    | '/app/submissions/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  NewSubmissionRoute: typeof NewSubmissionRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  NewSubmissionRoute: NewSubmissionRoute,
+  AppRouteRoute: AppRouteRouteWithChildren,
+  AuthRouteRoute: AuthRouteRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +206,37 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/new-submission"
+        "/app",
+        "/auth"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/new-submission": {
-      "filePath": "new-submission.tsx"
+    "/app": {
+      "filePath": "app/route.tsx",
+      "children": [
+        "/app/new",
+        "/app/submissions/"
+      ]
+    },
+    "/auth": {
+      "filePath": "auth/route.tsx",
+      "children": [
+        "/auth/login"
+      ]
+    },
+    "/app/new": {
+      "filePath": "app/new.tsx",
+      "parent": "/app"
+    },
+    "/auth/login": {
+      "filePath": "auth/login.tsx",
+      "parent": "/auth"
+    },
+    "/app/submissions/": {
+      "filePath": "app/submissions/index.tsx",
+      "parent": "/app"
     }
   }
 }

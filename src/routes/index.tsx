@@ -1,15 +1,18 @@
-import { Button } from "@/components/ui/button";
-import { createFileRoute } from "@tanstack/react-router";
+import { isAuthenticated } from "@/lib/auth-provider";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  beforeLoad: async () => {
+    const isAuthed = await isAuthenticated();
+    if (isAuthed) {
+      throw redirect({ to: "/app/new" });
+    } else {
+      throw redirect({ to: "/auth/login" });
+    }
+  },
 });
 
 function Index() {
-  return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
-      <Button>CLick me</Button>
-    </div>
-  );
+  return null;
 }
