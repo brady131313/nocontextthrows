@@ -1,7 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+} from "firebase/auth";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+import { addDoc, collection, doc, getFirestore } from "firebase/firestore";
 import { z } from "zod";
 
 const firebaseConfig = {
@@ -19,15 +24,17 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-export const signInWithGoogle = async (): Promise<boolean> => {
+export const signInWithGoogle = async (): Promise<void> => {
   const provider = new GoogleAuthProvider();
 
   try {
-    await signInWithPopup(auth, provider);
-    return true;
+    if (import.meta.env.DEV) {
+      await signInWithPopup(auth, provider);
+    } else {
+      await signInWithRedirect(auth, provider);
+    }
   } catch (error) {
     console.error("Error signing in with Google:", error);
-    return false;
   }
 };
 
@@ -61,6 +68,11 @@ type SubmissionSubmitResult =
     };
 
 export const submissionsCollection = collection(db, "submissions");
+
+export const submissionDoc = (submissionId: string) =>
+  doc(db, "submissions", submissionId);
+
+export const submissionFileRef = (path: string) => ref(storage, path);
 
 export const createSubmission = async (
   submission: NewSubmission,
@@ -101,4 +113,8 @@ const uploadFileAndGetUrl = async (
   });
 
   return storageRef.fullPath;
+};
+
+export const deleteSubmission = async (submissionIds: string[]) => {
+  console.log("TODO delete: ", submissionIds);
 };

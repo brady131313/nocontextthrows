@@ -28,6 +28,7 @@ declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     className?: string;
+    clickable?: boolean;
   }
 }
 
@@ -38,6 +39,7 @@ interface DataTableProps<TData, TValue> {
   filterPlaceholder?: string;
   getRowId?: (row: TData) => string;
   onDelete?: (ids: string[]) => void;
+  onClick?: (id: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -47,6 +49,7 @@ export function DataTable<TData, TValue>({
   filterPlaceholder = "Search...",
   getRowId,
   onDelete,
+  onClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -72,7 +75,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 gap-x-2">
         {filterColumn && (
           <Input
             placeholder={filterPlaceholder}
@@ -130,6 +133,11 @@ export function DataTable<TData, TValue>({
                     <TableCell
                       key={cell.id}
                       className={cell.column.columnDef.meta?.className}
+                      onClick={() => {
+                        if (cell.column.columnDef.meta?.clickable && getRowId) {
+                          onClick?.(getRowId(row.original));
+                        }
+                      }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

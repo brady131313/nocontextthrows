@@ -8,20 +8,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { signInWithGoogle } from "@/lib/firebase";
-import { useNavigate } from "@tanstack/react-router";
+import { Navigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-provider";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleSignIn = async () => {
-    const isSuccess = await signInWithGoogle();
-    if (isSuccess) {
-      navigate({ to: "/" });
-    }
-  };
+  if (user) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -38,7 +36,7 @@ export function LoginForm({
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={handleSignIn}
+                  onClick={signInWithGoogle}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path

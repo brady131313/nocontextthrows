@@ -2,7 +2,7 @@ import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Submission } from "@/lib/firebase";
+import { deleteSubmission, type Submission } from "@/lib/firebase";
 import { useSubmissions } from "@/lib/use-submissions";
 import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
@@ -50,13 +50,15 @@ const columns = [
       <div className="font-medium">{formatDate(getValue())}</div>
     ),
     meta: {
-      className: "w-[150px] min-w-[150px] max-w-[150px]",
+      className: "md:w-[150px] md:min-w-[150px] md:max-w-[150px]",
+      clickable: true,
     },
   }),
   columnHelper.accessor("tags", {
     header: "Tag As",
     meta: {
       className: "w-full",
+      clickable: true,
     },
   }),
   columnHelper.accessor("filePaths", {
@@ -65,16 +67,19 @@ const columns = [
       <div className="text-right">{getValue().length}</div>
     ),
     meta: {
-      className: "w-[75px] min-w-[75px] max-w-[75px]",
+      className:
+        "hidden md:table-cell md:w-[75px] md:min-w-[75px] md:max-w-[75px]",
+      clickable: true,
     },
   }),
 ];
 
 function RouteComponent() {
   const { submissions } = useSubmissions();
+  const navigate = Route.useNavigate();
 
-  const onDeleteSubmissions = (ids: string[]) => {
-    console.log("Deleting submissions:", ids);
+  const onDeleteSubmissions = async (ids: string[]) => {
+    await deleteSubmission(ids);
   };
 
   return (
@@ -83,7 +88,7 @@ function RouteComponent() {
         <CardHeader>
           <CardTitle>Submissions</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           <DataTable
             columns={columns}
             data={submissions}
@@ -91,6 +96,12 @@ function RouteComponent() {
             filterPlaceholder="Search tags..."
             getRowId={(row) => row.id}
             onDelete={onDeleteSubmissions}
+            onClick={(id) =>
+              navigate({
+                to: "/app/submissions/$submissionId",
+                params: { submissionId: id },
+              })
+            }
           />
         </CardContent>
       </Card>
