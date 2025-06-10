@@ -4,7 +4,7 @@ import {
   submissionsCollection,
   type Submission,
 } from "./firebase";
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot, orderBy, query } from "firebase/firestore";
 import { ZodError } from "zod";
 
 export const useSubmissions = () => {
@@ -12,12 +12,18 @@ export const useSubmissions = () => {
   const [error, setError] = useState<ZodError | null>(null);
 
   useEffect(() => {
-    const unsub = onSnapshot(submissionsCollection, (snapshot) => {
+    const q = query(submissionsCollection, orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snapshot) => {
       try {
         const items: Submission[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
-          const submission = SubmissionSchema.parse({ id: doc.id, ...data });
+          const preprocessedData = {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate?.() || data.createdAt,
+          };
+          const submission = SubmissionSchema.parse(preprocessedData);
           items.push(submission);
         });
 

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { z } from "zod";
 
@@ -38,7 +38,7 @@ export const signOut = async () => {
 export const SubmissionSchema = z.object({
   id: z.string(),
   tags: z.string(),
-  fileUrls: z.array(z.string()),
+  filePaths: z.array(z.string()),
   uid: z.string(),
   createdAt: z.coerce.date(),
 });
@@ -74,8 +74,8 @@ export const createSubmission = async (
 
     const docRef = await addDoc(submissionsCollection, {
       tags: submission.tags,
-      fileUrls: uploadedFileUrls,
-      createdAt: new Date().toISOString(),
+      filePaths: uploadedFileUrls,
+      createdAt: new Date(),
       uid,
     });
 
@@ -94,12 +94,11 @@ const uploadFileAndGetUrl = async (
   const fileName = `${uid}-${timestamp}-${file.name}`;
 
   const storageRef = ref(storage, `submissions/${fileName}`);
-  const snapshot = await uploadBytes(storageRef, file, {
+  await uploadBytes(storageRef, file, {
     customMetadata: {
       userId: uid,
     },
   });
 
-  const downloadUrl = await getDownloadURL(snapshot.ref);
-  return downloadUrl;
+  return storageRef.fullPath;
 };
