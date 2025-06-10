@@ -4,8 +4,10 @@
 - [x] Switch to signInWithRedirect so mobile works too
   - [ ] test in prod
 - [x] Submission pagination/filtering
-- [x] Add submission delete functionality
-- [x] Add submission download functionality
+- [ ] Add submission delete functionality
+- [ ] Add submission download functionality
+- [x] Add video preview
+  - [ ] update submission to include if video or image
 
 # V2
 - [ ] Render table as list of cards?

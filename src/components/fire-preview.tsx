@@ -2,8 +2,8 @@ import { submissionFileRef } from "@/lib/firebase";
 import { getDownloadURL } from "firebase/storage";
 import { useEffect, useState } from "react";
 
-const useFireImagePreview = (imagePath: string) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+const useFireFilePreview = (imagePath: string) => {
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -14,7 +14,7 @@ const useFireImagePreview = (imagePath: string) => {
 
         const storageRef = submissionFileRef(imagePath);
         const url = await getDownloadURL(storageRef);
-        setImageUrl(url);
+        setFileUrl(url);
       } catch (error) {
         setError(error instanceof Error ? error : new Error(String(error)));
       } finally {
@@ -25,15 +25,16 @@ const useFireImagePreview = (imagePath: string) => {
     fetchImage();
   }, [imagePath]);
 
-  return { imageUrl, loading, error };
+  return { fileUrl, loading, error };
 };
 
 type FireImagePreviewProps = {
-  imagePath: string;
+  filePath: string;
+  fileType: "image" | "video";
 };
 
-export function FireImagePreview({ imagePath }: FireImagePreviewProps) {
-  const { imageUrl, loading, error } = useFireImagePreview(imagePath);
+export function FireFilePreview({ filePath, fileType }: FireImagePreviewProps) {
+  const { fileUrl, loading, error } = useFireFilePreview(filePath);
 
   return (
     <div className="w-full overflow-hidden rounded-md aspect-square">
@@ -41,10 +42,17 @@ export function FireImagePreview({ imagePath }: FireImagePreviewProps) {
         <div className="w-full h-full bg-gray-200 animate-pulse"></div>
       )}
       {error && <div className="w-full h-full bg-red-200 animate-pulse"></div>}
-      {imageUrl && (
+      {fileUrl && fileType === "image" && (
         <img
-          src={imageUrl}
+          src={fileUrl}
           className="bg-gray-200 w-full h-full object-cover transition-all hover:scale-105"
+        />
+      )}
+      {fileUrl && fileType === "video" && (
+        <video
+          src={fileUrl}
+          className="bg-gray-200 w-full h-full object-cover"
+          controls
         />
       )}
     </div>

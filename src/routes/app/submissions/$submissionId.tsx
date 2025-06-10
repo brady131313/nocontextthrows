@@ -1,4 +1,4 @@
-import { FireImagePreview } from "@/components/fire-image-preview";
+import { FireFilePreview } from "@/components/fire-preview";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -62,7 +62,11 @@ function RouteComponent() {
           )}
         >
           {submission?.filePaths.map((filePath) => (
-            <FireImagePreview key={filePath} imagePath={filePath} />
+            <FireFilePreview
+              key={filePath}
+              filePath={filePath}
+              fileType="image"
+            />
           ))}
         </CardContent>
         <CardFooter className="gap-x-4">
