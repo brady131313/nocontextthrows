@@ -10,6 +10,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
   type DocumentData,
 } from "firebase/firestore";
 import { ZodError } from "zod";
@@ -22,6 +23,7 @@ const processSubmissionDoc = (
     id: docId,
     ...docData,
     createdAt: docData.createdAt?.toDate?.() || docData.createdAt,
+    deletedAt: docData.deletedAt?.toDate?.() || docData.deletedAt,
   };
 
   return SubmissionSchema.parse(preprocessedData);
@@ -112,7 +114,11 @@ export const useSubmissions = () => {
   const [error, setError] = useState<ZodError | null>(null);
 
   useEffect(() => {
-    const q = query(submissionsCollection, orderBy("createdAt", "desc"));
+    const q = query(
+      submissionsCollection,
+      where("deletedAt", "==", null),
+      orderBy("createdAt", "desc"),
+    );
     const unsub = onSnapshot(q, (snapshot) => {
       try {
         const items: Submission[] = [];

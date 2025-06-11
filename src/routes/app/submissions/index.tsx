@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/submissions/")({
   component: RouteComponent,
@@ -61,10 +62,10 @@ const columns = [
       clickable: true,
     },
   }),
-  columnHelper.accessor("filePaths", {
+  columnHelper.accessor("files", {
     header: () => <div className="text-right">Files</div>,
-    cell: ({ getValue }) => (
-      <div className="text-right">{getValue().length}</div>
+    cell: ({ row }) => (
+      <div className="text-right">{row.original.files.length}</div>
     ),
     meta: {
       className:
@@ -79,7 +80,10 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
 
   const onDeleteSubmissions = async (ids: string[]) => {
-    await deleteSubmission(ids);
+    const result = await deleteSubmission(ids);
+    if (!result.success) {
+      toast.error("Failed to delete submissions, please try again later.");
+    }
   };
 
   return (

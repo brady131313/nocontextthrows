@@ -23,6 +23,7 @@ import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -132,7 +133,11 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={cell.column.columnDef.meta?.className}
+                      className={cn(
+                        cell.column.columnDef.meta?.className,
+                        cell.column.columnDef.meta?.clickable &&
+                          "cursor-pointer",
+                      )}
                       onClick={() => {
                         if (cell.column.columnDef.meta?.clickable && getRowId) {
                           onClick?.(getRowId(row.original));

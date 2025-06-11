@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "set-storage-cors": "gsutil cors set cors.json gs://nocontextthrows-ff63b.firebasestorage.app"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.0",
@@ -24,6 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.9.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.513.0",
     "next-themes": "^0.4.6",
     "react": "^19.1.0",
