@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/app/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as AppNewImport } from './routes/app/new'
+import { Route as AppSubmissionsRouteImport } from './routes/app/submissions/route'
 import { Route as AppSubmissionsIndexImport } from './routes/app/submissions/index'
 import { Route as AppSubmissionsSubmissionIdImport } from './routes/app/submissions/$submissionId'
 
@@ -51,17 +52,23 @@ const AppNewRoute = AppNewImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 
-const AppSubmissionsIndexRoute = AppSubmissionsIndexImport.update({
-  id: '/submissions/',
-  path: '/submissions/',
+const AppSubmissionsRouteRoute = AppSubmissionsRouteImport.update({
+  id: '/submissions',
+  path: '/submissions',
   getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AppSubmissionsIndexRoute = AppSubmissionsIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSubmissionsRouteRoute,
 } as any)
 
 const AppSubmissionsSubmissionIdRoute = AppSubmissionsSubmissionIdImport.update(
   {
-    id: '/submissions/$submissionId',
-    path: '/submissions/$submissionId',
-    getParentRoute: () => AppRouteRoute,
+    id: '/$submissionId',
+    path: '/$submissionId',
+    getParentRoute: () => AppSubmissionsRouteRoute,
   } as any,
 )
 
@@ -90,6 +97,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRoute
     }
+    '/app/submissions': {
+      id: '/app/submissions'
+      path: '/submissions'
+      fullPath: '/app/submissions'
+      preLoaderRoute: typeof AppSubmissionsRouteImport
+      parentRoute: typeof AppRouteImport
+    }
     '/app/new': {
       id: '/app/new'
       path: '/new'
@@ -106,33 +120,44 @@ declare module '@tanstack/react-router' {
     }
     '/app/submissions/$submissionId': {
       id: '/app/submissions/$submissionId'
-      path: '/submissions/$submissionId'
+      path: '/$submissionId'
       fullPath: '/app/submissions/$submissionId'
       preLoaderRoute: typeof AppSubmissionsSubmissionIdImport
-      parentRoute: typeof AppRouteImport
+      parentRoute: typeof AppSubmissionsRouteImport
     }
     '/app/submissions/': {
       id: '/app/submissions/'
-      path: '/submissions'
-      fullPath: '/app/submissions'
+      path: '/'
+      fullPath: '/app/submissions/'
       preLoaderRoute: typeof AppSubmissionsIndexImport
-      parentRoute: typeof AppRouteImport
+      parentRoute: typeof AppSubmissionsRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface AppRouteRouteChildren {
-  AppNewRoute: typeof AppNewRoute
+interface AppSubmissionsRouteRouteChildren {
   AppSubmissionsSubmissionIdRoute: typeof AppSubmissionsSubmissionIdRoute
   AppSubmissionsIndexRoute: typeof AppSubmissionsIndexRoute
 }
 
-const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppNewRoute: AppNewRoute,
+const AppSubmissionsRouteRouteChildren: AppSubmissionsRouteRouteChildren = {
   AppSubmissionsSubmissionIdRoute: AppSubmissionsSubmissionIdRoute,
   AppSubmissionsIndexRoute: AppSubmissionsIndexRoute,
+}
+
+const AppSubmissionsRouteRouteWithChildren =
+  AppSubmissionsRouteRoute._addFileChildren(AppSubmissionsRouteRouteChildren)
+
+interface AppRouteRouteChildren {
+  AppSubmissionsRouteRoute: typeof AppSubmissionsRouteRouteWithChildren
+  AppNewRoute: typeof AppNewRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppSubmissionsRouteRoute: AppSubmissionsRouteRouteWithChildren,
+  AppNewRoute: AppNewRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
@@ -155,10 +180,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
+  '/app/submissions': typeof AppSubmissionsRouteRouteWithChildren
   '/app/new': typeof AppNewRoute
   '/auth/login': typeof AuthLoginRoute
   '/app/submissions/$submissionId': typeof AppSubmissionsSubmissionIdRoute
-  '/app/submissions': typeof AppSubmissionsIndexRoute
+  '/app/submissions/': typeof AppSubmissionsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -176,6 +202,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
+  '/app/submissions': typeof AppSubmissionsRouteRouteWithChildren
   '/app/new': typeof AppNewRoute
   '/auth/login': typeof AuthLoginRoute
   '/app/submissions/$submissionId': typeof AppSubmissionsSubmissionIdRoute
@@ -188,10 +215,11 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/app/submissions'
     | '/app/new'
     | '/auth/login'
     | '/app/submissions/$submissionId'
-    | '/app/submissions'
+    | '/app/submissions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +234,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/app/submissions'
     | '/app/new'
     | '/auth/login'
     | '/app/submissions/$submissionId'
@@ -246,15 +275,22 @@ export const routeTree = rootRoute
     "/app": {
       "filePath": "app/route.tsx",
       "children": [
-        "/app/new",
-        "/app/submissions/$submissionId",
-        "/app/submissions/"
+        "/app/submissions",
+        "/app/new"
       ]
     },
     "/auth": {
       "filePath": "auth/route.tsx",
       "children": [
         "/auth/login"
+      ]
+    },
+    "/app/submissions": {
+      "filePath": "app/submissions/route.tsx",
+      "parent": "/app",
+      "children": [
+        "/app/submissions/$submissionId",
+        "/app/submissions/"
       ]
     },
     "/app/new": {
@@ -267,11 +303,11 @@ export const routeTree = rootRoute
     },
     "/app/submissions/$submissionId": {
       "filePath": "app/submissions/$submissionId.tsx",
-      "parent": "/app"
+      "parent": "/app/submissions"
     },
     "/app/submissions/": {
       "filePath": "app/submissions/index.tsx",
-      "parent": "/app"
+      "parent": "/app/submissions"
     }
   }
 }

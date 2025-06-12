@@ -10,9 +10,11 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { Menu } from "lucide-react";
+import { useAuth } from "@/lib/auth-provider";
 
 export function Navbar() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -30,11 +32,15 @@ export function Navbar() {
             </Button>
           )}
         </Link>
-        <Link to="/app/submissions">
-          {({ isActive }) => (
-            <Button variant={isActive ? "outline" : "link"}>Submissions</Button>
-          )}
-        </Link>
+        {isAdmin && (
+          <Link to="/app/submissions">
+            {({ isActive }) => (
+              <Button variant={isActive ? "outline" : "link"}>
+                Submissions
+              </Button>
+            )}
+          </Link>
+        )}
       </div>
 
       <div className="flex-1 flex sm:hidden">
@@ -56,16 +62,18 @@ export function Navbar() {
                       </Link>
                     </NavigationMenuLink>
                   </li>
-                  <li>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        to="/app/submissions"
-                        activeProps={{ className: "font-bold" }}
-                      >
-                        Submissions
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
+                  {isAdmin && (
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to="/app/submissions"
+                          activeProps={{ className: "font-bold" }}
+                        >
+                          Submissions
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                  )}
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>

@@ -1,12 +1,10 @@
-import { isAuthenticated } from "@/lib/auth-provider";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { FireExtinguisher } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const isAuthed = await isAuthenticated();
-    if (isAuthed) {
+  beforeLoad: async ({ context }) => {
+    if (context.authStatus !== "unauthed") {
       throw redirect({ to: "/app/new" });
     }
   },

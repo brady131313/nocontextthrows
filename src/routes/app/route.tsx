@@ -1,12 +1,10 @@
 import { Navbar } from "@/components/navbar";
-import { isAuthenticated } from "@/lib/auth-provider";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app")({
   component: RouteComponent,
-  beforeLoad: async ({ location }) => {
-    const isAuth = await isAuthenticated();
-    if (!isAuth) {
+  beforeLoad: async ({ location, context }) => {
+    if (context.authStatus === "unauthed") {
       throw redirect({
         to: "/auth/login",
         search: { redirect: location.href },

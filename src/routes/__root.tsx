@@ -1,8 +1,17 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { isAuthenticated, type AuthStatus } from "@/lib/auth-provider";
+import {
+  createRootRoute,
+  createRootRouteWithContext,
+  Outlet,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
 
-export const Route = createRootRoute({
+type RouterContext = {
+  authStatus: AuthStatus;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => (
     <>
       <Outlet />
@@ -10,4 +19,10 @@ export const Route = createRootRoute({
       <Toaster />
     </>
   ),
+  beforeLoad: async () => {
+    const authStatus = await isAuthenticated();
+    return {
+      authStatus,
+    };
+  },
 });

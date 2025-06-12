@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] Add custom user claims so that only admins can see all submissions
+- [x] Add custom user claims so that only admins can see all submissions
 - [x] Switch to signInWithRedirect so mobile works too
 - [x] Submission pagination/filtering
 - [x] Add submission delete functionality
@@ -11,6 +11,7 @@
 
 # Prod Check
 - [ ] Can download submissions (update cors)
+- [ ] Set correct admin emails for cloud function
 - [ ] Sign in with redirect works
 
 # V2
