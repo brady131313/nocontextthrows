@@ -1,4 +1,8 @@
-import { onAuthStateChanged, type User } from "firebase/auth";
+import {
+  getRedirectResult,
+  onAuthStateChanged,
+  type User,
+} from "firebase/auth";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "./firebase";
 
@@ -12,6 +16,19 @@ const AuthContext = createContext<AuthContext | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const handleRedirectAuth = async () => {
+      const result = await getRedirectResult(auth);
+      const user = result?.user;
+
+      user?.getIdTokenResult().then((u) => {
+        setIsAdmin(u.claims["admin"] === true);
+      });
+    };
+
+    handleRedirectAuth();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

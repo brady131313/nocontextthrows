@@ -1,6 +1,10 @@
 [
   {
-    "origin": ["http://localhost:5173"],
+    "origin": [
+      "http://localhost:5173",
+      "https://nocontextthrows-ff63b.web.app",
+      "https://nocontextthrows-ff63b.firebaseapp.com"
+    ],
     "method": ["GET"],
     "maxAgeSeconds": 3600
   }

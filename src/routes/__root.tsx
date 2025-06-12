@@ -1,9 +1,5 @@
 import { isAuthenticated, type AuthStatus } from "@/lib/auth-provider";
-import {
-  createRootRoute,
-  createRootRouteWithContext,
-  Outlet,
-} from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
 

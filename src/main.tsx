@@ -8,7 +8,12 @@ import { routeTree } from "./routeTree.gen";
 import { AuthProvider } from "./lib/auth-provider";
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  context: {
+    authStatus: "unauthed",
+  },
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {

@@ -4,8 +4,10 @@ import { FireExtinguisher } from "lucide-react";
 export const Route = createFileRoute("/auth")({
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    if (context.authStatus !== "unauthed") {
+    if (context.authStatus === "authed") {
       throw redirect({ to: "/app/new" });
+    } else if (context.authStatus === "admin-authed") {
+      throw redirect({ to: "/app/submissions" });
     }
   },
 });
