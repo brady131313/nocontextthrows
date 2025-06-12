@@ -1,22 +1,20 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
-
 service firebase.storage {
-  // allow writes for authed user if less than 10MB
-    match /submissions/{fileId} {
-       	allow write: if request.auth != null
-      		&& request.resource.size < 10 * 1024 * 1024
-            && (request.resource.contentType.matches('image/.*')
-          		|| request.resource.contentType.matches('video/.*'));
-
-        allow read: if request.auth != null
-      		&& resource.metadata.userId == request.auth.uid;
-    }
-
     match /b/{bucket}/o {
+        match /submissions/{fileId} {
+            // allow writes for authed user if less than 10MB
+           	allow write: if request.auth != null
+          		&& request.resource.size < 10 * 1024 * 1024
+                && (request.resource.contentType.matches('image/.*')
+              		|| request.resource.contentType.matches('video/.*'));
+
+            // can read users own files or is admin
+            allow read: if request.auth != null
+          		&& (resource.metadata.userId == request.auth.uid
+                   || request.auth.token.admin == true);
+        }
+
         match /{allPaths=**} {
             allow read, write: if false;
         }
