@@ -12,7 +12,7 @@ import {
 import { deleteSubmission, downloadSubmission } from "@/lib/firebase";
 import { getSubmissionById, useSubmission } from "@/lib/use-submissions";
 import { cn, formatDate, triggerClientDownload } from "@/lib/utils";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { ArrowLeft, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +53,10 @@ function RouteComponent() {
       toast.error("Failed to download submission, please try again later.");
     }
   };
+
+  if (!submission) {
+    return <Navigate to="/app/submissions" />;
+  }
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
