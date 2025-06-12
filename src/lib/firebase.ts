@@ -5,13 +5,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
 } from "firebase/auth";
-import {
-  getBlob,
-  getBytes,
-  getStorage,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
+import { getBlob, getStorage, ref, uploadBytes } from "firebase/storage";
 import {
   addDoc,
   collection,

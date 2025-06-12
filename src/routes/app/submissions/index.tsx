@@ -6,7 +6,7 @@ import { deleteSubmission, type Submission } from "@/lib/firebase";
 import { useSubmissions } from "@/lib/use-submissions";
 import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 
@@ -73,7 +73,7 @@ const columns = [
       clickable: true,
     },
   }),
-];
+] as ColumnDef<Submission>[];
 
 function RouteComponent() {
   const { submissions } = useSubmissions();
