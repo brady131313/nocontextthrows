@@ -16,3 +16,4 @@
 
 # V2
 - [ ] Render table as list of cards?
+- [ ] with signInWithRedirect redirect admin to /submissions on login instead of /new

@@ -12,10 +12,14 @@ import {
 } from "./ui/form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { createSubmission } from "@/lib/firebase";
+import { createSubmission, type UploadProgressEvent } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-provider";
+import { Label } from "./ui/label";
+import { Progress } from "./ui/progress";
+
+const MAX_SIZE = 100 * 1024 * 1024;
 
 const submissionSchema = z.object({
   tags: z.string(),
@@ -30,7 +34,10 @@ const submissionSchema = z.object({
           (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
         ),
       { message: "Only images and videos are allowed" },
-    ),
+    )
+    .refine((files) => Array.from(files).every((f) => f.size < MAX_SIZE), {
+      message: "File size exceeds the limit",
+    }),
 });
 
 type SubmissionSchema = z.infer<typeof submissionSchema>;
@@ -38,6 +45,9 @@ type SubmissionSchema = z.infer<typeof submissionSchema>;
 export function SubmissionForm() {
   const { user } = useAuth();
   const [fileInputKey, setFileInputKey] = useState("file-input");
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressEvent[]>(
+    [],
+  );
 
   const form = useForm<SubmissionSchema>({
     resolver: zodResolver(submissionSchema),
@@ -55,10 +65,24 @@ export function SubmissionForm() {
   };
 
   const onSubmit = async (data: SubmissionSchema) => {
-    const result = await createSubmission(data, user!.uid);
+    const initialProgress: UploadProgressEvent[] = Array.from(data.files).map(
+      (_, idx) => ({
+        status: "change",
+        progress: 0,
+        idx,
+      }),
+    );
+    setUploadProgress(initialProgress);
+
+    const result = await createSubmission(data, user!.uid, (event) => {
+      setUploadProgress((prev) =>
+        prev.map((e) => (e.idx === event.idx ? event : e)),
+      );
+    });
 
     if (result.success) {
       resetForm();
+      setUploadProgress([]);
       toast.success("Submission created successfully!");
     } else {
       toast.error("Submission failed");
@@ -105,6 +129,21 @@ export function SubmissionForm() {
             </FormItem>
           )}
         />
+
+        {uploadProgress.length > 0 && (
+          <div>
+            <Label>Upload Progress</Label>
+            <div className="space-y-2 mt-3">
+              {uploadProgress.map((progress) => (
+                <Progress
+                  key={progress.idx}
+                  variant={progress.status === "error" ? "error" : "default"}
+                  value={progress.status === "change" ? progress.progress : 100}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Submitting..." : "Submit"}

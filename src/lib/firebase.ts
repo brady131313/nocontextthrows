@@ -5,7 +5,13 @@ import {
   signInWithPopup,
   signInWithRedirect,
 } from "firebase/auth";
-import { getBlob, getStorage, ref, uploadBytes } from "firebase/storage";
+import {
+  getBlob,
+  getStorage,
+  ref,
+  StorageError,
+  uploadBytesResumable,
+} from "firebase/storage";
 import {
   addDoc,
   collection,
@@ -98,13 +104,31 @@ export const submissionDoc = (submissionId: string) =>
 
 export const submissionFileRef = (path: string) => ref(storage, path);
 
+type UploadProgressEventDone = { status: "done"; idx: number };
+type UploadProgressEventError = {
+  status: "error";
+  idx: number;
+  error: StorageError;
+};
+type UploadProgressEventChange = {
+  status: "change";
+  idx: number;
+  progress: number;
+};
+
+export type UploadProgressEvent =
+  | UploadProgressEventDone
+  | UploadProgressEventError
+  | UploadProgressEventChange;
+
 export const createSubmission = async (
   newSubmission: NewSubmission,
   uid: string,
+  uploadProgressHandler?: (event: UploadProgressEvent) => void,
 ): Promise<SubmissionSubmitResult> => {
   try {
-    const filePromises = Array.from(newSubmission.files).map((file) =>
-      uploadFileAndGetSubmissionFile(file, uid),
+    const filePromises = Array.from(newSubmission.files).map((file, idx) =>
+      uploadFileAndGetSubmissionFile(file, uid, idx, uploadProgressHandler),
     );
     const uploadedFiles = await Promise.all(filePromises);
     const submission = BaseSubmissionSchema.parse({
@@ -137,22 +161,42 @@ const getFileType = (file: File): SubmissionFileType => {
 const uploadFileAndGetSubmissionFile = async (
   file: File,
   uid: string,
+  idx: number,
+  uploadProgressHandler?: (event: UploadProgressEvent) => void,
 ): Promise<SubmissionFile> => {
   const timestamp = Date.now();
   const fileName = `${uid}-${timestamp}-${file.name}`;
 
   const storageRef = ref(storage, `submissions/${fileName}`);
-  await uploadBytes(storageRef, file, {
+  const uploadTask = uploadBytesResumable(storageRef, file, {
     customMetadata: {
       userId: uid,
     },
   });
 
-  return {
-    path: storageRef.fullPath,
-    size: file.size,
-    type: getFileType(file),
-  };
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        uploadProgressHandler?.({ status: "change", idx, progress });
+      },
+      (error) => {
+        uploadProgressHandler?.({ status: "error", idx, error });
+        reject(error);
+      },
+      () => {
+        uploadProgressHandler?.({ status: "done", idx });
+
+        resolve({
+          path: storageRef.fullPath,
+          size: file.size,
+          type: getFileType(file),
+        });
+      },
+    );
+  });
 };
 
 type DeleteResult = { success: true } | { success: false; error: Error };
